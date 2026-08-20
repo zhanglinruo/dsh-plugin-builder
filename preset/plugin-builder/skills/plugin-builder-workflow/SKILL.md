@@ -1,6 +1,6 @@
 ---
 name: plugin-builder-workflow
-description: Build or change a DSH plugin through requirements, capability mapping, impact review, test-first implementation, verification, installation review, and acceptance.
+description: Use when a DSH plugin must be created, changed, repaired, packaged, installed, or reviewed.
 ---
 
 # DSH Plugin Builder Workflow
