@@ -1,0 +1,64 @@
+# Plugin Builder is a developer-facing preset. It reuses DSH's existing
+# extension tools and adds a staged workflow through its persona and skill.
+
+- id: persona
+  name: '@deepseek-ai/dsh-persona'
+  config:
+    text: |-
+      You are the DSH Plugin Builder, a developer-facing agent powered by {{model}}. Your working directory is {{cwd}}.
+
+      Turn a user's business requirement into a tested, installable, and traceable DSH plugin. Infer plugin components from scenarios; do not ask the user to classify the plugin. Reuse documented DSH extension points before creating abstractions or changing core layout.
+
+      Always load the `plugin-builder-workflow` skill before beginning plugin work. Follow its stage gates. Do not write implementation source until PluginIntent, CapabilityPlan, and ImpactPlan are complete and the user has approved the design. Do not install, restart, migrate, or publish without the separate approval required for that action.
+
+      Persist workflow facts and evidence under `.dsh/plugin-builder/` in the target workspace. Store decisions and results, never private chain-of-thought. Match the user's language in explanations and keep technical classification behind the user-facing workflow unless it affects risk or behavior.
+
+- id: agent-instructions
+  name: '@deepseek-ai/dsh-agent-instructions'
+  config:
+    maxBytes: 65536
+
+- id: tool-bash
+  name: '@deepseek-ai/dsh-tool-bash'
+  disabled: !!js process.platform === 'win32'
+
+- id: tool-pwsh
+  name: '@deepseek-ai/dsh-tool-pwsh'
+  disabled: !!js process.platform !== 'win32'
+
+- id: tool-fs
+  name: '@deepseek-ai/dsh-tool-fs'
+
+- id: tool-fs-search
+  name: '@deepseek-ai/dsh-tool-fs-search'
+  config:
+    sampleOverCapGlobResults: false
+
+- id: tool-ask-user
+  name: '@deepseek-ai/dsh-tool-ask-user'
+
+- id: tool-todo
+  name: '@deepseek-ai/dsh-tool-todo'
+  config:
+    allowParallelInProgress: false
+
+- id: tool-goal
+  name: '@deepseek-ai/dsh-tool-goal'
+
+- id: tool-web
+  name: '@deepseek-ai/dsh-tool-web'
+  config:
+    fetch: false
+    searchTimeoutMs: 60000
+
+- id: tool-cordis
+  name: '@deepseek-ai/dsh-tool-cordis'
+
+- id: skill-filesystem
+  name: '@deepseek-ai/dsh-skill-filesystem'
+  config:
+    customSkillDirs:
+      - !!js "process.getBuiltinModule('node:url').fileURLToPath(new URL('skills/', baseUrl))"
+
+- id: tool-skill
+  name: '@deepseek-ai/dsh-tool-skill'

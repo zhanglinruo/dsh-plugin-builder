@@ -1,0 +1,3 @@
+name: 插件构建器
+description: 从业务需求出发，分阶段设计、实现、验证和交付 DSH 插件。
+order: 5
