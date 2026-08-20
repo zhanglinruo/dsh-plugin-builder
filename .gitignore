@@ -1,0 +1,8 @@
+node_modules/
+lib/
+dist/
+.env
+.env.*
+*.log
+.dsh/plugin-builder/runtime/
+
