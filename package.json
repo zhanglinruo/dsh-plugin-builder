@@ -4,6 +4,9 @@
   "description": "A guided DSH Agent preset for building verified, installable plugins.",
   "type": "module",
   "license": "MIT",
+  "bin": {
+    "dsh-plugin-builder": "./src/cli.mjs"
+  },
   "engines": {
     "node": "^22.19.0 || >=24.0.0"
   },
