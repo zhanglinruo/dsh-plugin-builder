@@ -1,6 +1,6 @@
 # DSH Plugin Builder Design
 
-Status: design checkpoint
+Status: implementation baseline
 
 ## Objective
 
@@ -226,7 +226,45 @@ Three explicit gates exist:
 2. Installation approval before dependencies, profiles, presets, migration, or service restart are changed.
 3. Publication approval before any push, package publication, release creation, marketplace upload, or shared-team mutation.
 
-## Remaining design work
+## VerificationReport
 
-Before implementation begins, this design still needs the VerificationReport, installation transaction, runtime acceptance, developer-facing UI, and delivery/package contracts. After those sections are approved, the design will be versioned as the implementation baseline and expanded into an ordered engineering plan.
+VerificationReport records each required check as `not-run`, `passed`, `failed`, or `skipped`, together with the command or procedure, timestamp, relevant output, and artifact paths. A required check cannot be skipped without an approved reason. The report separates package validation, unit tests, DSH composition loading, security review, installation rehearsal, and user-scenario acceptance so a green low-level test cannot hide a failed runtime path.
 
+The first release validates the packaged preset structure, exercises installation against an isolated DSH home, and proves that reinstall and removal do not silently overwrite user-owned files. Runtime acceptance against a real DSH checkout remains a separate named check because it depends on the target installation.
+
+## Installation transaction
+
+The first release is distributed as an installable user Agent preset rather than a normal DSH bundle. DSH currently discovers user presets from `<DSH_HOME>/.agent-presets`, while an out-of-tree bundle contributes Cordis patch rows and has no stable interface for adding a preset root. This keeps the first release outside DSH core and makes the change reversible.
+
+Installation resolves the DSH home from an explicit `--dsh-home`, then `DSH_HOME`, then the platform user home. It validates the packaged preset, stages a complete copy beside the target, and publishes it with a rename. An existing target is preserved unless the user explicitly requests replacement. Replacement first moves the previous preset to a backup and restores it if publication fails. Uninstall removes only the exact `plugin-builder` preset installed at the resolved root.
+
+Installation does not install dependencies, change the active default preset, restart DSH, edit a profile, or publish anything externally. A running DSH process discovers the new preset on the next roster read; an existing session remains on its original preset and the user starts a new session in Plugin Builder mode.
+
+## Runtime acceptance
+
+The minimum acceptance path is:
+
+1. Install into an isolated DSH home.
+2. Confirm the preset is listed as `plugin-builder` and its composition parses.
+3. Start a new session with the preset.
+4. Ask for a small developer-oriented DSH plugin.
+5. Confirm the Agent enters discovery and clarification before implementation, produces PluginIntent, CapabilityPlan, and ImpactPlan artifacts, and does not install without approval.
+6. Confirm removal deletes only this preset and it disappears from later roster reads.
+
+The first automated slice covers steps 1, 2, and 6 without an LLM. The assembled DSH session scenario is retained as an explicit runtime acceptance check until a deterministic snapshot harness is added to this repository.
+
+## Developer-facing experience
+
+The first release adds one mode named `插件构建器`, described as a guided workflow for developing DSH plugins. It inherits the Cordis creation mode's shell, filesystem, planning, workflow, inspection, and temporary mounting capabilities. Its persona establishes the workflow gate, and its bundled skill provides detailed DSH-specific discovery, capability mapping, implementation, verification, installation, and delivery instructions.
+
+The Agent begins from the user's business request. It infers plugin components, asks only architecture-changing questions, shows an impact review before writing code, and shows an exact installation review before activation. Generated artifacts live in the target workspace under `.dsh/plugin-builder/`; the installed preset stores no project state.
+
+## Delivery and package contract
+
+The repository is a Node.js ESM package requiring Node.js `^22.19.0 || >=24.0.0` and has no runtime dependencies in the first release. It exposes a `dsh-plugin-builder` command with `install`, `status`, and `uninstall` operations. The npm package includes the command implementation, the complete preset directory, README, license, and design documentation.
+
+Git installations need no `prepare` build because executable JavaScript is shipped directly. Registry and tarball installations likewise run no install-time scripts. Publication remains outside the implementation workflow and requires explicit approval.
+
+## Future distribution seam
+
+When DSH exposes an additive registry or bundle manifest for preset contributions, the package can replace filesystem installation with native profile composition. The stored preset format and workflow artifacts remain unchanged so this migration does not alter user projects.
